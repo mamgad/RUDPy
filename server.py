@@ -1,5 +1,6 @@
 import socket
 import sys
+import threading
 
 
 #Seq number flag
@@ -18,24 +19,19 @@ class packet():
         self.seqNo=seqFlag;
         print "Message is %s length is %s seqNo is %s" % (self.msg, self.length, self.seqNo)
 
+class ResponseThread(threading.Thread):
+    def __init__(self, data, address):
+        threading.Thread.__init__(self)
+        self.data = data
+        self.address = address
+    def run(self):
+        print "thread data is %s"% self.data;
 
 
-
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-# Bind the socket to the port
-server_address = ('localhost', 10000)
-print  'starting up on %s port %s' % server_address
-sock.bind(server_address)
-pkt=packet()
-
-
-while True:
-    print  '\nwaiting to receive message'
-    data, address = sock.recvfrom(600)
-
-    print  'received %s bytes from %s' % (len(data), address)
-    #print  data
+def handleConnection(address,data):
+    threadSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    thread_server_address = ('localhost', 10001)
+    threadSock.bind(thread_server_address)
     try:
         print 'Opening file %s'%data
         fileRead=open(data , 'r')
@@ -54,12 +50,13 @@ while True:
 
             finalPacket = str(pkt.checksum)+","+str(pkt.seqNo)+","+str(pkt.length)+","+pkt.msg
 
-            sent = sock.sendto(finalPacket, address) #send packet
+            sent = threadSock.sendto(finalPacket, address) #send packet
             print  'sent %s bytes back to %s waiting for ack..' % (sent, address)
-            ack, address = sock.recvfrom(100);
+            ack, address = threadSock.recvfrom(100);
             print(ack)
             x = +1
-            
+
+
         #fileRead.close();
 
 
@@ -67,3 +64,21 @@ while True:
         print "error opening file"
         exit()
 
+
+
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+# Bind the socket to the port
+server_address = ('localhost', 10000)
+print  'starting up on %s port %s' % server_address
+sock.bind(server_address)
+pkt=packet()
+
+
+while True:
+    print  '\nwaiting to receive message'
+    data, address = sock.recvfrom(600)
+    handleConnection(address,data);
+    print  'received %s bytes from %s' % (len(data), address)
+    #print  data
