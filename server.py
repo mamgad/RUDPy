@@ -16,7 +16,7 @@ class packet():
     def make(self,data):
         self.msg = data
         self.length = str(len(data)).zfill(3)
-        self.seqNo=seqFlag;
+
         print "Message is %s length is %s seqNo is %s" % (self.msg, self.length, self.seqNo)
 
 class ResponseThread(threading.Thread):
@@ -29,6 +29,7 @@ class ResponseThread(threading.Thread):
 
 
 def handleConnection(address,data):
+
     threadSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     thread_server_address = ('localhost', 10001)
     threadSock.bind(thread_server_address)
@@ -53,6 +54,10 @@ def handleConnection(address,data):
             sent = threadSock.sendto(finalPacket, address) #send packet
             print  'sent %s bytes back to %s waiting for ack..' % (sent, address)
             ack, address = threadSock.recvfrom(100);
+            print "first is %s and second is %s"%(ack.split(",")[0],pkt.seqNo)
+            if (ack.split(",")[0]==str(pkt.seqNo)):
+                pkt.seqNo=(pkt.seqNo+1)%2
+                print "\n\n\n\n\nS NUMBER IS NOW %s\n\n\n\n\n"%str(pkt.seqNo);
             print(ack)
             x = +1
 
@@ -79,6 +84,14 @@ pkt=packet()
 while True:
     print  '\nwaiting to receive message'
     data, address = sock.recvfrom(600)
-    handleConnection(address,data);
+    #handleConnection(address,data);
+
+
+    connectionThread = threading.Thread(target=handleConnection, args=(address, data))
+
+    connectionThread.start()
+
+
+
     print  'received %s bytes from %s' % (len(data), address)
     #print  data
