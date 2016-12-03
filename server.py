@@ -35,7 +35,7 @@ while True:
     data, address = sock.recvfrom(600)
 
     print  'received %s bytes from %s' % (len(data), address)
-    print  data
+    #print  data
     try:
         print 'Opening file %s'%data
         fileRead=open(data , 'r')
@@ -52,11 +52,14 @@ while True:
             pkt.make(msg);
             print "length is %s" % str(pkt.length);
 
-            finalPacket = str(pkt.checksum)+str(pkt.length)+pkt.msg
-            
+            finalPacket = str(pkt.checksum)+","+str(pkt.seqNo)+","+str(pkt.length)+","+pkt.msg
+
             sent = sock.sendto(finalPacket, address) #send packet
-            print  'sent %s bytes back to %s' % (sent, address)
+            print  'sent %s bytes back to %s waiting for ack..' % (sent, address)
+            ack, address = sock.recvfrom(100);
+            print(ack)
             x = +1
+            
         #fileRead.close();
 
 
