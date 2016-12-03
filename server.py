@@ -20,8 +20,6 @@ class packet():
 # Connection handler
 def handleConnection(address,data):
     threadSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    thread_server_address = ('localhost', 10001)
-    threadSock.bind(thread_server_address)
     try:
         # Read requested file
         print 'Opening file %s' % data
