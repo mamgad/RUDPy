@@ -1,5 +1,6 @@
 import socket
 import hashlib
+import os
 
 # Delimiter
 delimiter = "|:|:|";
@@ -8,7 +9,7 @@ delimiter = "|:|:|";
 while 1:
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server_address = ('localhost', 10000)
-    userInput = raw_input("\nRequested file: \n")
+    userInput = raw_input("\nRequested file: ")
     message = userInput;
     seqNoFlag = 0
     f = open("r_" + userInput, 'w');
@@ -28,7 +29,8 @@ while 1:
             if data.split(delimiter)[0] == hashlib.md5(data.split(delimiter)[3]).hexdigest()[:8] and seqNoFlag == int(seqNo == True):
                 packetLength = data.split(delimiter)[2]
                 if data.split(delimiter)[3] == "FNF":
-                    print ("File Does not exist")
+                    print ("Requested file could not be found on the server")
+                    os.remove("r_" + userInput)
                 else:
                     f.write(data.split(delimiter)[3]);
                 print "Sequence number: %s\nLength: %s" % (seqNo, packetLength);

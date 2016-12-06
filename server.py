@@ -4,7 +4,6 @@ import hashlib
 import time
 import datetime
 import random
-import sys
 
 # Delimiter
 delimiter = "|:|:|";
@@ -31,9 +30,9 @@ def handleConnection(address, data):
     drop_count=0
     packet_count=0
     time.sleep(0.5)
-    packet_loss_percentage=float(raw_input("Enter a packet loss percentage (0-100): \n"))/100.0
+    packet_loss_percentage=float(raw_input("Set PLP (0-99)%: "))/100.0
     while packet_loss_percentage<0 or packet_loss_percentage >= 1:
-        packet_loss_percentage = float(raw_input("Enter a packet loss percentage (0-99): \n"))/100.0
+        packet_loss_percentage = float(raw_input("Enter a valid PLP value. Set PLP (0-99)%: "))/100.0
     start_time=time.time()
     print "Request started at: " + str(datetime.datetime.utcnow())
     pkt = packet()
@@ -47,12 +46,12 @@ def handleConnection(address, data):
             data = fileRead.read()
             fileRead.close()
         except:
-            print "error opening requested file"
             msg="FNF";
             pkt.make(msg);
             finalPacket = str(pkt.checksum) + delimiter + str(pkt.seqNo) + delimiter + str(pkt.length) + delimiter + pkt.msg
             threadSock.sendto(finalPacket, address)
-            return 0 ;
+            print "Requested file could not be found, replied with FNF"
+            return
 
 
         # Fragment and send file 500 byte by 500 byte
@@ -85,7 +84,7 @@ def handleConnection(address, data):
                 drop_count += 1
         print "Packets: " + str(packet_count) + "\nDropped packets: " + str(drop_count)+"\nComputed drop rate: %.2f" % float(float(drop_count)/float(packet_count)*100.0)
     except:
-        print " "
+        print "Internal server error"
 
 
 
