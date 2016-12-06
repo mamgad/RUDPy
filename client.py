@@ -27,6 +27,8 @@ while 1:
             print  '\nWaiting to receive..'
             try:
                 data, server = sock.recvfrom(4096)
+                # Reset failed trials on successful transmission
+                connection_trials_count=0;
             except:
                 connection_trials_count += 1
                 if connection_trials_count < 5:
