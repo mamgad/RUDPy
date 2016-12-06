@@ -29,7 +29,7 @@ class packet():
     def make(self, data):
         self.msg = data
         self.length = str(len(data))
-        self.checksum=hashlib.md5(data).hexdigest()
+        self.checksum=hashlib.sha1(data).hexdigest()
         print "Length: %s\nSequence number: %s" % (self.length, self.seqNo)
 
 

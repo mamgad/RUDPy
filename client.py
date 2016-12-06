@@ -43,9 +43,10 @@ while 1:
                     os.remove("r_" + userInput)
                     break
             seqNo = data.split(delimiter)[1]
+            clientHash = hashlib.sha1(data.split(delimiter)[3]).hexdigest()
             print "Server hash: " + data.split(delimiter)[0]
-            print "Client hash: " + hashlib.md5(data.split(delimiter)[3]).hexdigest()
-            if data.split(delimiter)[0] == hashlib.md5(data.split(delimiter)[3]).hexdigest() and seqNoFlag == int(seqNo == True):
+            print "Client hash: " + clientHash
+            if data.split(delimiter)[0] == clientHash and seqNoFlag == int(seqNo == True):
                 packetLength = data.split(delimiter)[2]
                 if data.split(delimiter)[3] == "FNF":
                     print ("Requested file could not be found on the server")
