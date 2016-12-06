@@ -8,6 +8,7 @@ delimiter = "|:|:|";
 # Start - Connection initiation
 while 1:
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.settimeout(2);
     server_address = ('localhost', 10000)
     userInput = raw_input("\nRequested file: ")
     message = userInput;
@@ -15,6 +16,8 @@ while 1:
     f = open("r_" + userInput, 'w');
 
     try:
+        # Connection trials
+        connection_trials_count=0
         # Send data
         print  'Requesting %s' % message
         sent = sock.sendto(message, server_address)
@@ -22,7 +25,17 @@ while 1:
         while 1:
             # Receive response
             print  '\nWaiting to receive..'
-            data, server = sock.recvfrom(4096)
+            try:
+                data, server = sock.recvfrom(4096)
+            except:
+                connection_trials_count += 1
+                if connection_trials_count < 5:
+                    print "\nConnection time out, retrying"
+                    continue
+                else:
+                    print "\nMaximum connection trials reached, skipping request\n"
+                    os.remove("r_" + userInput)
+                    break
             seqNo = data.split(delimiter)[1]
             print "Server hash: " + data.split(delimiter)[0]
             print "Client hash: " + hashlib.md5(data.split(delimiter)[3]).hexdigest()[:8]
