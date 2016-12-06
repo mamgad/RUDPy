@@ -1,34 +1,44 @@
 import socket
 import sys
+import hashlib
 
 # Start - Connection initiation
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-server_address = ('localhost', 10000)
-userInput=raw_input("Requested file: ")
-message=userInput;
-f = open("rec "+userInput, 'a');
+while 1:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server_address = ('localhost', 10000)
+    userInput = raw_input("\nRequested file: \n")
+    message = userInput;
+    seqNoFlag = 0
+    f = open("r_" + userInput, 'w');
 
-try:
-    # Send data
-    print  'Requesting %s' % message
-    sent = sock.sendto(message, server_address)
-    # Receive indefinitely
-    while(1):
-    # Receive response
-        print  'Waiting to receive..'
-        data, server = sock.recvfrom(4096)
-        print  'Received: %s' % data
-        seqNo = data.split(",")[1]
-        packetLength = data.split(",")[2]
-        print "Message content: %s" % data.split(",")[3]
-        f.write(data.split(",")[3]);
+    try:
+        # Send data
+        print  'Requesting %s' % message
+        sent = sock.sendto(message, server_address)
+        # Receive indefinitely
+        while 1:
+            # Receive response
+            print  'Waiting to receive..'
+            data, server = sock.recvfrom(4096)
+            seqNo = data.split("|:|:|")[1]
+            print "Server hash: " + data.split("|:|:|")[0]
+            print "Client hash: " + hashlib.md5(data.split("|:|:|")[3]).hexdigest()[:8]
+            if data.split("|:|:|")[0] == hashlib.md5(data.split("|:|:|")[3]).hexdigest()[:8] and seqNoFlag == int(seqNo == True):
+                seqNo = int(not seqNo)
+                packetLength = data.split("|:|:|")[2]
+                f.write(data.split("|:|:|")[3]);
+                print "Sequence number: %s\nLength: %s" % (seqNo, packetLength);
+                print "Server: %s on port %s" % server;
+                sent = sock.sendto(str(seqNo) + "," + packetLength, server)
+            else:
+                print "Checksum mismatch detected, dropping packet"
+                print "Server: %s on port %s" % server;
+                continue;
+            if int(packetLength) < 500:
+                seqNo = int(not seqNo)
+                break
 
-        print "Sequence number: %s\nLength: %s" % (seqNo, packetLength);
-        print "Server: %s\nPort: %s" % server;
-        sent = sock.sendto(str(seqNo) + "," + packetLength, server)
-
-
-finally:
-    print >> sys.stderr, 'Closing socket'
-    sock.close()
-    f.close()
+    finally:
+        print "Closing socket"
+        sock.close()
+        f.close()

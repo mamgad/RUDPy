@@ -1,10 +1,11 @@
 import socket
-import sys
 import threading
+import hashlib
+import time
+import datetime
 
 # Seq number flag
 seqFlag = 0
-
 
 # Packet class definition
 class packet():
@@ -16,26 +17,29 @@ class packet():
     def make(self, data):
         self.msg = data
         self.length = str(len(data))
-        print "Message: %s\nLength: %s\nSequence number: %s" % (self.msg, self.length, self.seqNo)
+        self.checksum=hashlib.md5(data).hexdigest()[:8]
+        print "Length: %s\nSequence number: %s" % (self.length, self.seqNo)
 
 
 # Connection handler
 def handleConnection(address, data):
+    start_time=time.time()
+    print "Request started at: " + str(datetime.datetime.utcnow())
+    pkt = packet()
     threadSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         # Read requested file
-        print 'Opening file %s' % data
+        print "Opening file %s" % data
         fileRead = open(data, 'r')
         data = fileRead.read()
         fileRead.close()
 
         # Fragment and send file 500 byte by 500 byte
         x = 0
-        while (x < (len(data) / 500) + 1):
-            print "forloop starts here";
+        while x < (len(data) / 500) + 1:
             msg = data[x * 500:x * 500 + 500];
             pkt.make(msg);
-            finalPacket = str(pkt.checksum) + "," + str(pkt.seqNo) + "," + str(pkt.length) + "," + pkt.msg
+            finalPacket = str(pkt.checksum) + "|:|:|" + str(pkt.seqNo) + "|:|:|" + str(pkt.length) + "|:|:|" + pkt.msg
 
             # Send packet
             sent = threadSock.sendto(finalPacket, address)
@@ -44,11 +48,11 @@ def handleConnection(address, data):
             try:
                 ack, address = threadSock.recvfrom(100);
             except:
-                print "time out , Resending ...%s" % x;
+                print "Time out reached, resending ...%s" % x;
                 continue;
-            if (ack.split(",")[0] == str(pkt.seqNo)):
-                pkt.seqNo = (pkt.seqNo + 1) % 2
-            print("Acknowledgment: " + ack)
+            if ack.split(",")[0] == str(pkt.seqNo):
+                pkt.seqNo = int(not pkt.seqNo)
+            print "Acknowledged by: " + ack + "\nAcknowledged at: " + str(datetime.datetime.utcnow()) + "\nElapsed: " + str(time.time()-start_time)
             x += 1
 
     # File opening failure handling
@@ -62,11 +66,10 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server_address = ('localhost', 10000)
 print  'Starting up on %s port %s' % server_address
 sock.bind(server_address)
-pkt = packet()
 
 # Listening for requests indefinitely
 while True:
-    print  '\nWaiting to receive message'
+    print  'Waiting to receive message'
     data, address = sock.recvfrom(600)
     connectionThread = threading.Thread(target=handleConnection, args=(address, data))
     connectionThread.start()
