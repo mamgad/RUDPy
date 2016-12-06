@@ -1,6 +1,8 @@
 import socket
-import sys
 import hashlib
+
+# Delimiter
+delimiter = "|:|:|";
 
 # Start - Connection initiation
 while 1:
@@ -20,12 +22,12 @@ while 1:
             # Receive response
             print  '\nWaiting to receive..'
             data, server = sock.recvfrom(4096)
-            seqNo = data.split("|:|:|")[1]
-            print "Server hash: " + data.split("|:|:|")[0]
-            print "Client hash: " + hashlib.md5(data.split("|:|:|")[3]).hexdigest()[:8]
-            if data.split("|:|:|")[0] == hashlib.md5(data.split("|:|:|")[3]).hexdigest()[:8] and seqNoFlag == int(seqNo == True):
-                packetLength = data.split("|:|:|")[2]
-                f.write(data.split("|:|:|")[3]);
+            seqNo = data.split(delimiter)[1]
+            print "Server hash: " + data.split(delimiter)[0]
+            print "Client hash: " + hashlib.md5(data.split(delimiter)[3]).hexdigest()[:8]
+            if data.split(delimiter)[0] == hashlib.md5(data.split(delimiter)[3]).hexdigest()[:8] and seqNoFlag == int(seqNo == True):
+                packetLength = data.split(delimiter)[2]
+                f.write(data.split(delimiter)[3]);
                 print "Sequence number: %s\nLength: %s" % (seqNo, packetLength);
                 print "Server: %s on port %s" % server;
                 sent = sock.sendto(str(seqNo) + "," + packetLength, server)

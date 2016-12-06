@@ -3,6 +3,11 @@ import threading
 import hashlib
 import time
 import datetime
+import random
+import sys
+
+# Delimiter
+delimiter = "|:|:|";
 
 # Seq number flag
 seqFlag = 0
@@ -23,6 +28,10 @@ class packet():
 
 # Connection handler
 def handleConnection(address, data):
+    drop_count=0
+    packet_count=0
+    time.sleep(0.5)
+    packet_loss_percentage=float(raw_input("Enter a packet loss percentage (0-100): \n"))/100.0
     start_time=time.time()
     print "Request started at: " + str(datetime.datetime.utcnow())
     pkt = packet()
@@ -37,24 +46,32 @@ def handleConnection(address, data):
         # Fragment and send file 500 byte by 500 byte
         x = 0
         while x < (len(data) / 500) + 1:
-            msg = data[x * 500:x * 500 + 500];
-            pkt.make(msg);
-            finalPacket = str(pkt.checksum) + "|:|:|" + str(pkt.seqNo) + "|:|:|" + str(pkt.length) + "|:|:|" + pkt.msg
+            packet_count += 1
+            randomised_plp = random.random()
+            if packet_loss_percentage < randomised_plp:
+                msg = data[x * 500:x * 500 + 500];
+                pkt.make(msg);
+                finalPacket = str(pkt.checksum) + delimiter + str(pkt.seqNo) + delimiter + str(
+                    pkt.length) + delimiter + pkt.msg
 
-            # Send packet
-            sent = threadSock.sendto(finalPacket, address)
-            print  'Sent %s bytes back to %s, awaiting acknowledgment..' % (sent, address)
-            threadSock.settimeout(2)
-            try:
-                ack, address = threadSock.recvfrom(100);
-            except:
-                print "Time out reached, resending ...%s" % x;
-                continue;
-            if ack.split(",")[0] == str(pkt.seqNo):
-                pkt.seqNo = int(not pkt.seqNo)
-                print "Acknowledged by: " + ack + "\nAcknowledged at: " + str(datetime.datetime.utcnow()) + "\nElapsed: " + str(time.time()-start_time)
-                x += 1
-
+                # Send packet
+                sent = threadSock.sendto(finalPacket, address)
+                print  'Sent %s bytes back to %s, awaiting acknowledgment..' % (sent, address)
+                threadSock.settimeout(2)
+                try:
+                    ack, address = threadSock.recvfrom(100);
+                except:
+                    print "Time out reached, resending ...%s" % x;
+                    continue;
+                if ack.split(",")[0] == str(pkt.seqNo):
+                    pkt.seqNo = int(not pkt.seqNo)
+                    print "Acknowledged by: " + ack + "\nAcknowledged at: " + str(
+                        datetime.datetime.utcnow()) + "\nElapsed: " + str(time.time() - start_time)
+                    x += 1
+            else:
+                print "\n------------------------------\n\t\tDropped packet\n------------------------------\n"
+                drop_count += 1
+        print "Packets: " + str(packet_count) + "\nDropped packets: " + str(drop_count)+"\nComputed drop rate: %.2f" % float(float(drop_count)/float(packet_count)*100.0)
     # File opening failure handling
     except:
         print "Error on opening the requested file"
