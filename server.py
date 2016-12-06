@@ -5,6 +5,14 @@ import time
 import datetime
 import random
 
+# PLP Simulation settings
+lossSimualation = False
+
+# Set address and port
+serverAddress = "localhost"
+serverPort = 10000
+
+
 # Delimiter
 delimiter = "|:|:|";
 
@@ -21,7 +29,7 @@ class packet():
     def make(self, data):
         self.msg = data
         self.length = str(len(data))
-        self.checksum=hashlib.md5(data).hexdigest()[:8]
+        self.checksum=hashlib.sha1(data).hexdigest()
         print "Length: %s\nSequence number: %s" % (self.length, self.seqNo)
 
 
@@ -30,9 +38,12 @@ def handleConnection(address, data):
     drop_count=0
     packet_count=0
     time.sleep(0.5)
-    packet_loss_percentage=float(raw_input("Set PLP (0-99)%: "))/100.0
-    while packet_loss_percentage<0 or packet_loss_percentage >= 1:
-        packet_loss_percentage = float(raw_input("Enter a valid PLP value. Set PLP (0-99)%: "))/100.0
+    if lossSimualation:
+        packet_loss_percentage=float(raw_input("Set PLP (0-99)%: "))/100.0
+        while packet_loss_percentage<0 or packet_loss_percentage >= 1:
+          packet_loss_percentage = float(raw_input("Enter a valid PLP value. Set PLP (0-99)%: "))/100.0
+    else:
+        packet_loss_percentage = 0
     start_time=time.time()
     print "Request started at: " + str(datetime.datetime.utcnow())
     pkt = packet()
@@ -52,7 +63,6 @@ def handleConnection(address, data):
             threadSock.sendto(finalPacket, address)
             print "Requested file could not be found, replied with FNF"
             return
-
 
         # Fragment and send file 500 byte by 500 byte
         x = 0
@@ -82,7 +92,9 @@ def handleConnection(address, data):
             else:
                 print "\n------------------------------\n\t\tDropped packet\n------------------------------\n"
                 drop_count += 1
-        print "Packets: " + str(packet_count) + "\nDropped packets: " + str(drop_count)+"\nComputed drop rate: %.2f" % float(float(drop_count)/float(packet_count)*100.0)
+        print "Packets served: " + str(packet_count)
+        if lossSimualation:
+            print "Dropped packets: " + str(drop_count)+"\nComputed drop rate: %.2f" % float(float(drop_count)/float(packet_count)*100.0)
     except:
         print "Internal server error"
 
@@ -91,7 +103,7 @@ def handleConnection(address, data):
 # Start - Connection initiation
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 # Bind the socket to the port
-server_address = ('localhost', 10000)
+server_address = (serverAddress, serverPort)
 print  'Starting up on %s port %s' % server_address
 sock.bind(server_address)
 
