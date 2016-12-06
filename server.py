@@ -31,7 +31,9 @@ def handleConnection(address, data):
     drop_count=0
     packet_count=0
     time.sleep(0.5)
-    packet_loss_percentage=float(raw_input("Enter a packet loss percentage (0-100): \n"))/100.0
+    packet_loss_percentage = float(raw_input("Enter a packet loss percentage (0-99): \n"))/100.0
+    while packet_loss_percentage<0 or packet_loss_percentage >= 1:
+        packet_loss_percentage = float(raw_input("Enter a packet loss percentage (0-99): \n"))/100.0
     start_time=time.time()
     print "Request started at: " + str(datetime.datetime.utcnow())
     pkt = packet()
