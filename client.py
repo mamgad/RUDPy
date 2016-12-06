@@ -2,6 +2,10 @@ import socket
 import hashlib
 import os
 
+# Set address and port
+clientAddress = "localhost"
+clientPort = 10000
+
 # Delimiter
 delimiter = "|:|:|";
 
@@ -9,7 +13,7 @@ delimiter = "|:|:|";
 while 1:
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(10);
-    server_address = ('localhost', 10000)
+    server_address = (clientAddress, 10000)
     userInput = raw_input("\nRequested file: ")
     message = userInput;
     seqNoFlag = 0
@@ -40,8 +44,8 @@ while 1:
                     break
             seqNo = data.split(delimiter)[1]
             print "Server hash: " + data.split(delimiter)[0]
-            print "Client hash: " + hashlib.md5(data.split(delimiter)[3]).hexdigest()[:8]
-            if data.split(delimiter)[0] == hashlib.md5(data.split(delimiter)[3]).hexdigest()[:8] and seqNoFlag == int(seqNo == True):
+            print "Client hash: " + hashlib.md5(data.split(delimiter)[3]).hexdigest()
+            if data.split(delimiter)[0] == hashlib.md5(data.split(delimiter)[3]).hexdigest() and seqNoFlag == int(seqNo == True):
                 packetLength = data.split(delimiter)[2]
                 if data.split(delimiter)[3] == "FNF":
                     print ("Requested file could not be found on the server")
