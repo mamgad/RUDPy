@@ -18,13 +18,12 @@ while 1:
         # Receive indefinitely
         while 1:
             # Receive response
-            print  'Waiting to receive..'
+            print  '\nWaiting to receive..'
             data, server = sock.recvfrom(4096)
             seqNo = data.split("|:|:|")[1]
             print "Server hash: " + data.split("|:|:|")[0]
             print "Client hash: " + hashlib.md5(data.split("|:|:|")[3]).hexdigest()[:8]
             if data.split("|:|:|")[0] == hashlib.md5(data.split("|:|:|")[3]).hexdigest()[:8] and seqNoFlag == int(seqNo == True):
-                seqNo = int(not seqNo)
                 packetLength = data.split("|:|:|")[2]
                 f.write(data.split("|:|:|")[3]);
                 print "Sequence number: %s\nLength: %s" % (seqNo, packetLength);

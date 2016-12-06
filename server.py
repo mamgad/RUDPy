@@ -52,8 +52,8 @@ def handleConnection(address, data):
                 continue;
             if ack.split(",")[0] == str(pkt.seqNo):
                 pkt.seqNo = int(not pkt.seqNo)
-            print "Acknowledged by: " + ack + "\nAcknowledged at: " + str(datetime.datetime.utcnow()) + "\nElapsed: " + str(time.time()-start_time)
-            x += 1
+                print "Acknowledged by: " + ack + "\nAcknowledged at: " + str(datetime.datetime.utcnow()) + "\nElapsed: " + str(time.time()-start_time)
+                x += 1
 
     # File opening failure handling
     except:
