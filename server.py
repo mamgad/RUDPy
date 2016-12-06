@@ -31,7 +31,7 @@ def handleConnection(address, data):
     drop_count=0
     packet_count=0
     time.sleep(0.5)
-    packet_loss_percentage = float(raw_input("Enter a packet loss percentage (0-99): \n"))/100.0
+    packet_loss_percentage=float(raw_input("Enter a packet loss percentage (0-100): \n"))/100.0
     while packet_loss_percentage<0 or packet_loss_percentage >= 1:
         packet_loss_percentage = float(raw_input("Enter a packet loss percentage (0-99): \n"))/100.0
     start_time=time.time()
@@ -40,10 +40,20 @@ def handleConnection(address, data):
     threadSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         # Read requested file
-        print "Opening file %s" % data
-        fileRead = open(data, 'r')
-        data = fileRead.read()
-        fileRead.close()
+
+        try:
+            print "Opening file %s" % data
+            fileRead = open(data, 'r')
+            data = fileRead.read()
+            fileRead.close()
+        except:
+            print "error opening requested file"
+            msg="FNF";
+            pkt.make(msg);
+            finalPacket = str(pkt.checksum) + delimiter + str(pkt.seqNo) + delimiter + str(pkt.length) + delimiter + pkt.msg
+            threadSock.sendto(finalPacket, address)
+            return 0 ;
+
 
         # Fragment and send file 500 byte by 500 byte
         x = 0
@@ -74,9 +84,9 @@ def handleConnection(address, data):
                 print "\n------------------------------\n\t\tDropped packet\n------------------------------\n"
                 drop_count += 1
         print "Packets: " + str(packet_count) + "\nDropped packets: " + str(drop_count)+"\nComputed drop rate: %.2f" % float(float(drop_count)/float(packet_count)*100.0)
-    # File opening failure handling
     except:
-        print "Error on opening the requested file"
+        print " "
+
 
 
 # Start - Connection initiation

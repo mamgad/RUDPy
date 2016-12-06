@@ -27,7 +27,10 @@ while 1:
             print "Client hash: " + hashlib.md5(data.split(delimiter)[3]).hexdigest()[:8]
             if data.split(delimiter)[0] == hashlib.md5(data.split(delimiter)[3]).hexdigest()[:8] and seqNoFlag == int(seqNo == True):
                 packetLength = data.split(delimiter)[2]
-                f.write(data.split(delimiter)[3]);
+                if data.split(delimiter)[3] == "FNF":
+                    print ("File Does not exist")
+                else:
+                    f.write(data.split(delimiter)[3]);
                 print "Sequence number: %s\nLength: %s" % (seqNo, packetLength);
                 print "Server: %s on port %s" % server;
                 sent = sock.sendto(str(seqNo) + "," + packetLength, server)
