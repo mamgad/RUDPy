@@ -13,7 +13,7 @@ delimiter = "|:|:|";
 while 1:
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(10);
-    server_address = (serverAddress, 10000)
+    server_address = (serverAddress, serverPort)
     userInput = raw_input("\nRequested file: ")
     message = userInput;
     seqNoFlag = 0
