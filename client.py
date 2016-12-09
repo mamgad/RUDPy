@@ -3,8 +3,8 @@ import hashlib
 import os
 
 # Set address and port
-clientAddress = "localhost"
-clientPort = 10000
+serverAddress = "localhost"
+serverPort = 10000
 
 # Delimiter
 delimiter = "|:|:|";
@@ -13,7 +13,7 @@ delimiter = "|:|:|";
 while 1:
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(10);
-    server_address = (clientAddress, 10000)
+    server_address = (serverAddress, 10000)
     userInput = raw_input("\nRequested file: ")
     message = userInput;
     seqNoFlag = 0
